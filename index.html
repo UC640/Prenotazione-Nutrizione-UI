@@ -309,6 +309,10 @@
   </div>
 
   <script>
+    // ⚠️ SOSTITUISCI questo segnaposto con l'URL /exec della tua Web App
+    // Apps Script (Distribuisci → Gestisci distribuzioni → copia l'URL)
+    const URL_API = "INCOLLA_QUI_IL_TUO_URL_TERMINANTE_IN_/exec";
+
     const statoPrenotazione = {
       tipoVisita: null,
       dataISO: null,
@@ -365,12 +369,15 @@
       document.getElementById('contenitoreDate').innerHTML =
         '<div class="stato-caricamento">Carico le date disponibili…</div>';
 
-      google.script.run
-        .withSuccessHandler(mostraDateDisponibili)
-        .withFailureHandler(function(errore) {
-          mostraErrore('Non è stato possibile caricare le date disponibili. Riprova.');
+      fetch(URL_API + '?azione=giorniDisponibili')
+        .then(function(risposta) { return risposta.json(); })
+        .then(function(giorni) {
+          if (giorni.errore) throw new Error(giorni.errore);
+          mostraDateDisponibili(giorni);
         })
-        .ottieniGiorniDisponibili();
+        .catch(function(errore) {
+          mostraErrore('Non è stato possibile caricare le date disponibili. Riprova.');
+        });
     }
 
     // Le card mostrano il giorno abbreviato (già in italiano, es. "Sab") sopra
@@ -418,12 +425,19 @@
       document.getElementById('contenitoreOrari').innerHTML =
         '<div class="stato-caricamento">Carico gli orari disponibili…</div>';
 
-      google.script.run
-        .withSuccessHandler(mostraOrariDisponibili)
-        .withFailureHandler(function(errore) {
-          mostraErrore('Non è stato possibile caricare gli orari disponibili. Riprova.');
+      const parametri = '?azione=slotDisponibili' +
+        '&dataISO=' + encodeURIComponent(statoPrenotazione.dataISO) +
+        '&tipoVisita=' + encodeURIComponent(statoPrenotazione.tipoVisita);
+
+      fetch(URL_API + parametri)
+        .then(function(risposta) { return risposta.json(); })
+        .then(function(orari) {
+          if (orari.errore) throw new Error(orari.errore);
+          mostraOrariDisponibili(orari);
         })
-        .ottieniSlotDisponibili(statoPrenotazione.dataISO, statoPrenotazione.tipoVisita);
+        .catch(function(errore) {
+          mostraErrore('Non è stato possibile caricare gli orari disponibili. Riprova.');
+        });
     }
 
     // Il server ora restituisce { mattina: [...], pomeriggio: [...] } invece di
@@ -541,23 +555,32 @@
       bottone.disabled = true;
       bottone.textContent = 'Invio in corso…';
 
-      google.script.run
-        .withSuccessHandler(gestisciRispostaConferma)
-        .withFailureHandler(function(errore) {
+      const datiDaInviare = {
+        dataISO: statoPrenotazione.dataISO,
+        tipoVisita: statoPrenotazione.tipoVisita,
+        oraInizio: statoPrenotazione.oraInizio,
+        nome: statoPrenotazione.nome,
+        cognome: statoPrenotazione.cognome,
+        dataNascitaISO: statoPrenotazione.dataNascitaISO,
+        email: statoPrenotazione.email,
+        telefono: statoPrenotazione.telefono,
+        disciplinaPraticata: statoPrenotazione.disciplinaPraticata
+      };
+
+      fetch(URL_API, {
+        method: 'POST',
+        // Content-Type "text/plain" (invece di "application/json") evita che il
+        // browser mandi una richiesta preflight OPTIONS, che Apps Script non gestisce.
+        // Il corpo resta comunque testo JSON: lo interpretiamo così in doPost().
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(datiDaInviare)
+      })
+        .then(function(risposta) { return risposta.json(); })
+        .then(gestisciRispostaConferma)
+        .catch(function(errore) {
           bottone.disabled = false;
           bottone.textContent = 'Conferma prenotazione';
           mostraErrore('Si è verificato un errore imprevisto. Riprova.');
-        })
-        .confermaPrenotazione({
-          dataISO: statoPrenotazione.dataISO,
-          tipoVisita: statoPrenotazione.tipoVisita,
-          oraInizio: statoPrenotazione.oraInizio,
-          nome: statoPrenotazione.nome,
-          cognome: statoPrenotazione.cognome,
-          dataNascitaISO: statoPrenotazione.dataNascitaISO,
-          email: statoPrenotazione.email,
-          telefono: statoPrenotazione.telefono,
-          disciplinaPraticata: statoPrenotazione.disciplinaPraticata
         });
     }
 
