@@ -1,1 +1,623 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --colore-sfondo: #F5F6F8;      /* bianco leggermente freddo, sfondo generale */
+      --colore-testo: #16181D;       /* quasi nero, testo principale */
+      --colore-testo-tenue: #5B6270; /* grigio-blu, testo secondario */
+      --colore-guida: #3E6FD9;       /* blu, usato per hover */
+      --colore-guida-scuro: #1E3A6B; /* blu navy scuro, elementi selezionati/attivi/bottoni */
+      --colore-bordo: #DADFE6;       /* grigio-blu chiaro, bordi */
+      --colore-errore: #C4293A;      /* rosso, riservato a errori */
+      --colore-scheda-dati: #EEF2F8; /* azzurro tenuissimo, sfondo scheda dati utente */
+      --raggio: 10px;
+    }
 
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Public Sans', -apple-system, sans-serif;
+      background: var(--colore-sfondo);
+      color: var(--colore-testo);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .contenitore {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+
+    header.intestazione { margin-bottom: 28px; }
+    header.intestazione h1 { font-size: 22px; font-weight: 700; margin: 0 0 4px; letter-spacing: -0.01em; }
+    header.intestazione p { margin: 0; color: var(--colore-testo-tenue); font-size: 14px; }
+
+    .indicatore-passi { display: flex; gap: 6px; margin-bottom: 28px; }
+    .indicatore-passi span { flex: 1; height: 3px; background: var(--colore-bordo); border-radius: 2px; transition: background 0.25s ease; }
+    .indicatore-passi span.completato { background: var(--colore-guida); }
+
+    .passo-label { font-size: 13px; color: var(--colore-testo-tenue); margin-bottom: 6px; }
+    .passo { display: none; }
+    .passo.attivo { display: block; animation: comparsa 0.2s ease; }
+    @keyframes comparsa { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    h2.titolo-passo { font-size: 19px; font-weight: 600; margin: 0 0 18px; }
+
+    /* ===== Passo 1: due card di tipo visita affiancate ===== */
+    .griglia-tipo-visita {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .scheda-tipo-visita {
+      border: 1.5px solid var(--colore-bordo);
+      background: #fff;
+      border-radius: var(--raggio);
+      padding: 18px 12px;
+      text-align: center;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+    }
+
+    .scheda-tipo-visita:hover { border-color: var(--colore-guida); }
+    .scheda-tipo-visita:active { transform: scale(0.98); }
+
+    .scheda-tipo-visita.selezionata {
+      border-color: var(--colore-guida-scuro);
+      background: #E8EFFB;
+    }
+
+    .scheda-tipo-visita .icona-tipo-visita { font-size: 28px; display: block; margin-bottom: 8px; }
+    .scheda-tipo-visita .titolo-opzione { font-weight: 600; font-size: 15px; display: block; color: var(--colore-testo); }
+    .scheda-tipo-visita .sottotitolo-opzione { font-size: 13px; color: var(--colore-testo-tenue); display: block; margin-top: 4px; }
+
+    /* ===== Passo 2: griglia date, 3 per riga ===== */
+    .griglia-date {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .scheda-data {
+      border: 1.5px solid var(--colore-bordo);
+      background: #fff;
+      border-radius: var(--raggio);
+      padding: 12px 4px;
+      text-align: center;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .scheda-data:hover { border-color: var(--colore-guida); }
+    .scheda-data.selezionata { border-color: var(--colore-guida-scuro); background: #E8EFFB; }
+
+    .scheda-data .giorno-settimana { font-weight: 600; font-size: 14px; display: block; }
+    .scheda-data .giorno-numero { font-size: 12px; color: var(--colore-testo-tenue); display: block; margin-top: 2px; }
+
+    /* ===== Passo 3: orari divisi in Mattina / Pomeriggio ===== */
+    .gruppo-orari { margin-bottom: 20px; }
+    .gruppo-orari:last-child { margin-bottom: 0; }
+
+    .titolo-gruppo-orari {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--colore-testo-tenue);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+
+    .griglia-orari { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+    .orario-opzione {
+      border: 1.5px solid var(--colore-bordo);
+      background: #fff;
+      border-radius: var(--raggio);
+      padding: 10px 4px;
+      text-align: center;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .orario-opzione:hover { border-color: var(--colore-guida); }
+    .orario-opzione.selezionata { border-color: var(--colore-guida-scuro); background: #E8EFFB; }
+
+    /* ===== Passo 4: dati utente racchiusi in una scheda con sfondo ===== */
+    .scheda-dati-utente {
+      background: var(--colore-scheda-dati);
+      border: 1.5px solid var(--colore-bordo);
+      border-radius: var(--raggio);
+      padding: 18px 16px 4px;
+      margin-bottom: 4px;
+    }
+
+    .campo { margin-bottom: 14px; }
+    .campo label { display: block; font-size: 13px; color: var(--colore-testo-tenue); margin-bottom: 5px; }
+
+    .campo input {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1.5px solid var(--colore-bordo);
+      border-radius: var(--raggio);
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--colore-testo);
+      background: #fff;
+    }
+
+    .campo input:focus { outline: none; border-color: var(--colore-guida-scuro); }
+
+    /* ===== Passo 5: riepilogo ===== */
+    .riepilogo { background: #fff; border: 1.5px solid var(--colore-bordo); border-radius: var(--raggio); padding: 16px; margin-bottom: 20px; }
+    .riepilogo .riga { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+    .riepilogo .riga:not(:last-child) { border-bottom: 1px solid var(--colore-bordo); }
+    .riepilogo .riga span:first-child { color: var(--colore-testo-tenue); }
+    .riepilogo .riga span:last-child { font-weight: 600; text-align: right; }
+
+    .azioni { display: flex; gap: 10px; margin-top: 24px; }
+
+    button.principale, button.secondario {
+      font-family: inherit; font-size: 15px; font-weight: 600;
+      padding: 13px 20px; border-radius: var(--raggio); cursor: pointer; border: none;
+    }
+
+    button.principale { background: var(--colore-guida-scuro); color: #fff; flex: 1; }
+    button.principale:disabled { background: var(--colore-bordo); color: var(--colore-testo-tenue); cursor: not-allowed; }
+    button.secondario { background: transparent; color: var(--colore-testo-tenue); border: 1.5px solid var(--colore-bordo); }
+
+    .messaggio-errore { background: #FBEAE5; color: var(--colore-errore); border-radius: var(--raggio); padding: 11px 14px; font-size: 14px; margin-bottom: 16px; display: none; }
+    .messaggio-errore.visibile { display: block; }
+
+    .stato-caricamento, .stato-vuoto { text-align: center; padding: 30px 0; color: var(--colore-testo-tenue); font-size: 14px; }
+
+    .schermata-successo { text-align: center; padding: 20px 0; }
+    .schermata-successo .segno {
+      width: 52px; height: 52px; border-radius: 50%; background: var(--colore-guida-scuro); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 18px;
+    }
+    .schermata-successo h2 { font-size: 20px; margin: 0 0 8px; }
+    .schermata-successo p { color: var(--colore-testo-tenue); font-size: 14px; margin: 0 0 20px; }
+  </style>
+</head>
+<body>
+
+  <div class="contenitore">
+    <header class="intestazione" id="intestazionePrincipale">
+      <h1>Prenota la tua visita</h1>
+      <p>Studio Nutrizionale G. Bagnano</p>
+    </header>
+
+    <div class="indicatore-passi" id="indicatorePassi">
+      <span data-passo="1"></span>
+      <span data-passo="2"></span>
+      <span data-passo="3"></span>
+      <span data-passo="4"></span>
+      <span data-passo="5"></span>
+    </div>
+
+    <div class="messaggio-errore" id="messaggioErrore"></div>
+
+    <!-- PASSO 1: TIPO VISITA - 2 card affiancate -->
+    <section class="passo attivo" id="passo1">
+      <div class="passo-label">Passo 1 di 5</div>
+      <h2 class="titolo-passo">Che tipo di visita vuoi prenotare?</h2>
+      <div class="griglia-tipo-visita">
+        <button class="scheda-tipo-visita" data-tipo="Prima visita" onclick="selezionaTipoVisita('Prima visita')">
+          <span class="icona-tipo-visita">📋</span>
+          <span class="titolo-opzione">Prima visita</span>
+          <span class="sottotitolo-opzione">Durata: 60 minuti</span>
+        </button>
+        <button class="scheda-tipo-visita" data-tipo="Visita di controllo" onclick="selezionaTipoVisita('Visita di controllo')">
+          <span class="icona-tipo-visita">🔄</span>
+          <span class="titolo-opzione">Visita di controllo</span>
+          <span class="sottotitolo-opzione">Durata: 30 minuti</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- PASSO 2: DATA - griglia 3 per riga -->
+    <section class="passo" id="passo2">
+      <div class="passo-label">Passo 2 di 5</div>
+      <h2 class="titolo-passo">Scegli una data</h2>
+      <div id="contenitoreDate">
+        <div class="stato-caricamento">Carico le date disponibili…</div>
+      </div>
+      <div class="azioni">
+        <button class="secondario" onclick="vaAlPasso(1)">Indietro</button>
+      </div>
+    </section>
+
+    <!-- PASSO 3: ORARIO - diviso in Mattina / Pomeriggio -->
+    <section class="passo" id="passo3">
+      <div class="passo-label">Passo 3 di 5</div>
+      <h2 class="titolo-passo">Scegli un orario fra quelli disponibili</h2>
+      <div id="contenitoreOrari">
+        <div class="stato-caricamento">Carico gli orari disponibili…</div>
+      </div>
+      <div class="azioni">
+        <button class="secondario" onclick="vaAlPasso(2)">Indietro</button>
+      </div>
+    </section>
+
+    <!-- PASSO 4: DATI ANAGRAFICI - racchiusi in una scheda con sfondo -->
+    <section class="passo" id="passo4">
+      <div class="passo-label">Passo 4 di 5</div>
+      <h2 class="titolo-passo">Inserisci i tuoi dati</h2>
+      <div class="scheda-dati-utente">
+        <div class="campo">
+          <label for="campoNome">Nome</label>
+          <input type="text" id="campoNome">
+        </div>
+        <div class="campo">
+          <label for="campoCognome">Cognome</label>
+          <input type="text" id="campoCognome">
+        </div>
+        <div class="campo">
+          <label for="campoDataNascita">Data di nascita</label>
+          <input type="date" id="campoDataNascita">
+        </div>
+        <div class="campo">
+          <label for="campoEmail">Email</label>
+          <input type="email" id="campoEmail">
+        </div>
+        <div class="campo">
+          <label for="campoTelefono">Telefono</label>
+          <input type="tel" id="campoTelefono">
+        </div>
+        <div class="campo">
+          <label for="campoDisciplina">Disciplina sportiva praticata</label>
+          <input type="text" id="campoDisciplina">
+        </div>
+      </div>
+      <div class="azioni">
+        <button class="secondario" onclick="vaAlPasso(3)">Indietro</button>
+        <button class="principale" onclick="validaDatiEProsegui()">Continua</button>
+      </div>
+    </section>
+
+    <!-- PASSO 5: RIEPILOGO E CONFERMA -->
+    <section class="passo" id="passo5">
+      <div class="passo-label">Passo 5 di 5</div>
+      <h2 class="titolo-passo">Controlla e conferma</h2>
+      <div class="riepilogo" id="riepilogoFinale"></div>
+      <div class="azioni">
+        <button class="secondario" onclick="vaAlPasso(4)">Indietro</button>
+        <button class="principale" id="bottoneConferma" onclick="inviaPrenotazione()">Conferma prenotazione</button>
+      </div>
+    </section>
+
+    <!-- SCHERMATA FINALE DI SUCCESSO -->
+    <section class="passo" id="passoSuccesso">
+      <div class="schermata-successo">
+        <div class="segno">✓</div>
+        <h2>Prenotazione confermata!</h2>
+        <p id="testoSuccesso"></p>
+        <button class="principale" onclick="ricominciaPrenotazione()">Prenota un'altra visita</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const statoPrenotazione = {
+      tipoVisita: null,
+      dataISO: null,
+      etichettaData: null,
+      oraInizio: null,
+      nome: null,
+      cognome: null,
+      dataNascitaISO: null,
+      etichettaDataNascita: null,
+      email: null,
+      telefono: null,
+      disciplinaPraticata: null
+    };
+
+    let passoCorrente = 1;
+
+    function mostraErrore(messaggio) {
+      const el = document.getElementById('messaggioErrore');
+      el.textContent = messaggio;
+      el.classList.add('visibile');
+    }
+
+    function nascondiErrore() {
+      document.getElementById('messaggioErrore').classList.remove('visibile');
+    }
+
+    function aggiornaIndicatorePassi() {
+      document.querySelectorAll('#indicatorePassi span').forEach(function(el) {
+        const numeroPasso = parseInt(el.getAttribute('data-passo'), 10);
+        el.classList.toggle('completato', numeroPasso <= passoCorrente);
+      });
+    }
+
+    function vaAlPasso(numeroPasso) {
+      nascondiErrore();
+      document.querySelectorAll('.passo').forEach(function(el) { el.classList.remove('attivo'); });
+      document.getElementById('passo' + numeroPasso).classList.add('attivo');
+      passoCorrente = numeroPasso;
+      aggiornaIndicatorePassi();
+    }
+
+    // --- PASSO 1 ---
+    function selezionaTipoVisita(tipo) {
+      statoPrenotazione.tipoVisita = tipo;
+      document.querySelectorAll('#passo1 .scheda-tipo-visita').forEach(function(el) {
+        el.classList.toggle('selezionata', el.getAttribute('data-tipo') === tipo);
+      });
+      caricaDateDisponibili();
+      vaAlPasso(2);
+    }
+
+    // --- PASSO 2 ---
+    function caricaDateDisponibili() {
+      document.getElementById('contenitoreDate').innerHTML =
+        '<div class="stato-caricamento">Carico le date disponibili…</div>';
+
+      google.script.run
+        .withSuccessHandler(mostraDateDisponibili)
+        .withFailureHandler(function(errore) {
+          mostraErrore('Non è stato possibile caricare le date disponibili. Riprova.');
+        })
+        .ottieniGiorniDisponibili();
+    }
+
+    // Le card mostrano il giorno abbreviato (già in italiano, es. "Sab") sopra
+    // e la data numerica (es. "19/09") sotto, ricavandoli dall'etichetta
+    // "Sab 19/09" restituita dal server (vedi formattaEtichettaData in Codice.gs)
+    function mostraDateDisponibili(giorni) {
+      const contenitore = document.getElementById('contenitoreDate');
+
+      if (!giorni || giorni.length === 0) {
+        contenitore.innerHTML = '<div class="stato-vuoto">Al momento non ci sono date disponibili. Riprova più tardi.</div>';
+        return;
+      }
+
+      contenitore.innerHTML = '';
+      const griglia = document.createElement('div');
+      griglia.className = 'griglia-date';
+
+      giorni.forEach(function(giorno) {
+        const parti = giorno.etichetta.split(' '); // es. ["Sab", "19/09"]
+        const bottone = document.createElement('button');
+        bottone.className = 'scheda-data';
+        bottone.setAttribute('data-data-iso', giorno.dataISO);
+        bottone.innerHTML =
+          '<span class="giorno-settimana">' + parti[0] + '</span>' +
+          '<span class="giorno-numero">' + parti[1] + '</span>';
+        bottone.onclick = function() { selezionaData(giorno.dataISO, giorno.etichetta); };
+        griglia.appendChild(bottone);
+      });
+
+      contenitore.appendChild(griglia);
+    }
+
+    function selezionaData(dataISO, etichetta) {
+      statoPrenotazione.dataISO = dataISO;
+      statoPrenotazione.etichettaData = etichetta;
+      document.querySelectorAll('#contenitoreDate .scheda-data').forEach(function(el) {
+        el.classList.toggle('selezionata', el.getAttribute('data-data-iso') === dataISO);
+      });
+      caricaOrariDisponibili();
+      vaAlPasso(3);
+    }
+
+    // --- PASSO 3 ---
+    function caricaOrariDisponibili() {
+      document.getElementById('contenitoreOrari').innerHTML =
+        '<div class="stato-caricamento">Carico gli orari disponibili…</div>';
+
+      google.script.run
+        .withSuccessHandler(mostraOrariDisponibili)
+        .withFailureHandler(function(errore) {
+          mostraErrore('Non è stato possibile caricare gli orari disponibili. Riprova.');
+        })
+        .ottieniSlotDisponibili(statoPrenotazione.dataISO, statoPrenotazione.tipoVisita);
+    }
+
+    // Il server ora restituisce { mattina: [...], pomeriggio: [...] } invece di
+    // un array unico: costruiamo un gruppo separato per ciascuno, saltando
+    // quello vuoto (es. se la mattina è già tutta occupata)
+    function mostraOrariDisponibili(orari) {
+      const contenitore = document.getElementById('contenitoreOrari');
+      const nessunOrario = (!orari) || (orari.mattina.length === 0 && orari.pomeriggio.length === 0);
+
+      if (nessunOrario) {
+        contenitore.innerHTML = '<div class="stato-vuoto">Nessun orario disponibile per questa data. Torna indietro e scegli un\'altra data.</div>';
+        return;
+      }
+
+      contenitore.innerHTML = '';
+
+      if (orari.mattina.length > 0) {
+        contenitore.appendChild(creaGruppoOrari('Mattina', orari.mattina));
+      }
+      if (orari.pomeriggio.length > 0) {
+        contenitore.appendChild(creaGruppoOrari('Pomeriggio', orari.pomeriggio));
+      }
+    }
+
+    // Crea un blocco "Mattina" o "Pomeriggio" con titoletto + griglia di orari
+    function creaGruppoOrari(titolo, elencoOrari) {
+      const gruppo = document.createElement('div');
+      gruppo.className = 'gruppo-orari';
+
+      const titoloEl = document.createElement('div');
+      titoloEl.className = 'titolo-gruppo-orari';
+      titoloEl.textContent = titolo;
+      gruppo.appendChild(titoloEl);
+
+      const griglia = document.createElement('div');
+      griglia.className = 'griglia-orari';
+
+      elencoOrari.forEach(function(orario) {
+        const bottone = document.createElement('button');
+        bottone.className = 'orario-opzione';
+        bottone.setAttribute('data-orario', orario);
+        bottone.textContent = orario;
+        bottone.onclick = function() { selezionaOrario(orario); };
+        griglia.appendChild(bottone);
+      });
+
+      gruppo.appendChild(griglia);
+      return gruppo;
+    }
+
+    function selezionaOrario(orario) {
+      statoPrenotazione.oraInizio = orario;
+      // Cerca tra TUTTI i bottoni orario della pagina (sia nel gruppo Mattina che Pomeriggio)
+      document.querySelectorAll('#contenitoreOrari .orario-opzione').forEach(function(el) {
+        el.classList.toggle('selezionata', el.getAttribute('data-orario') === orario);
+      });
+      vaAlPasso(4);
+    }
+
+    // --- PASSO 4 ---
+    function validaDatiEProsegui() {
+      const nome = document.getElementById('campoNome').value.trim();
+      const cognome = document.getElementById('campoCognome').value.trim();
+      const dataNascitaISO = document.getElementById('campoDataNascita').value;
+      const email = document.getElementById('campoEmail').value.trim();
+      const telefono = document.getElementById('campoTelefono').value.trim();
+      const disciplinaPraticata = document.getElementById('campoDisciplina').value.trim();
+
+      if (!nome || !cognome || !dataNascitaISO || !email || !telefono || !disciplinaPraticata) {
+        mostraErrore('Compila tutti i campi per continuare.');
+        return;
+      }
+
+      const formatoEmailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (!formatoEmailValido) {
+        mostraErrore('Inserisci un indirizzo email valido.');
+        return;
+      }
+
+      nascondiErrore();
+      statoPrenotazione.nome = nome;
+      statoPrenotazione.cognome = cognome;
+      statoPrenotazione.dataNascitaISO = dataNascitaISO;
+      statoPrenotazione.etichettaDataNascita = formattaDataItaliana(dataNascitaISO);
+      statoPrenotazione.email = email;
+      statoPrenotazione.telefono = telefono;
+      statoPrenotazione.disciplinaPraticata = disciplinaPraticata;
+
+      mostraRiepilogo();
+      vaAlPasso(5);
+    }
+
+    function formattaDataItaliana(dataISO) {
+      const parti = dataISO.split('-');
+      return parti[2] + '/' + parti[1] + '/' + parti[0];
+    }
+
+    // --- PASSO 5 ---
+    function mostraRiepilogo() {
+      const el = document.getElementById('riepilogoFinale');
+      el.innerHTML =
+        '<div class="riga"><span>Tipo visita</span><span>' + statoPrenotazione.tipoVisita + '</span></div>' +
+        '<div class="riga"><span>Data</span><span>' + statoPrenotazione.etichettaData + '</span></div>' +
+        '<div class="riga"><span>Orario</span><span>' + statoPrenotazione.oraInizio + '</span></div>' +
+        '<div class="riga"><span>Nome</span><span>' + statoPrenotazione.nome + ' ' + statoPrenotazione.cognome + '</span></div>' +
+        '<div class="riga"><span>Data di nascita</span><span>' + statoPrenotazione.etichettaDataNascita + '</span></div>' +
+        '<div class="riga"><span>Email</span><span>' + statoPrenotazione.email + '</span></div>' +
+        '<div class="riga"><span>Telefono</span><span>' + statoPrenotazione.telefono + '</span></div>' +
+        '<div class="riga"><span>Disciplina praticata</span><span>' + statoPrenotazione.disciplinaPraticata + '</span></div>';
+    }
+
+    function inviaPrenotazione() {
+      nascondiErrore();
+      const bottone = document.getElementById('bottoneConferma');
+      bottone.disabled = true;
+      bottone.textContent = 'Invio in corso…';
+
+      google.script.run
+        .withSuccessHandler(gestisciRispostaConferma)
+        .withFailureHandler(function(errore) {
+          bottone.disabled = false;
+          bottone.textContent = 'Conferma prenotazione';
+          mostraErrore('Si è verificato un errore imprevisto. Riprova.');
+        })
+        .confermaPrenotazione({
+          dataISO: statoPrenotazione.dataISO,
+          tipoVisita: statoPrenotazione.tipoVisita,
+          oraInizio: statoPrenotazione.oraInizio,
+          nome: statoPrenotazione.nome,
+          cognome: statoPrenotazione.cognome,
+          dataNascitaISO: statoPrenotazione.dataNascitaISO,
+          email: statoPrenotazione.email,
+          telefono: statoPrenotazione.telefono,
+          disciplinaPraticata: statoPrenotazione.disciplinaPraticata
+        });
+    }
+
+    function gestisciRispostaConferma(risposta) {
+      const bottone = document.getElementById('bottoneConferma');
+
+      if (!risposta.successo) {
+        bottone.disabled = false;
+        bottone.textContent = 'Conferma prenotazione';
+        mostraErrore(risposta.messaggio || 'Lo slot scelto non è più disponibile.');
+        caricaOrariDisponibili();
+        vaAlPasso(3);
+        return;
+      }
+
+      document.getElementById('testoSuccesso').textContent =
+        statoPrenotazione.tipoVisita + ' il ' + risposta.dettagli.etichettaData +
+        ' alle ' + risposta.dettagli.oraInizio + '. Riceverai a breve un\'email di conferma.';
+
+      document.querySelectorAll('.passo').forEach(function(el) { el.classList.remove('attivo'); });
+      document.getElementById('passoSuccesso').classList.add('attivo');
+      document.getElementById('indicatorePassi').style.display = 'none';
+      document.getElementById('intestazionePrincipale').style.display = 'none';
+    }
+
+    // --- "PRENOTA UN'ALTRA VISITA" ---
+    // Riporta la pagina esattamente allo stato iniziale, così si può
+    // effettuare subito una nuova prenotazione senza ricaricare la pagina
+    function ricominciaPrenotazione() {
+      // 1) Svuota lo stato globale
+      Object.keys(statoPrenotazione).forEach(function(chiave) {
+        statoPrenotazione[chiave] = null;
+      });
+
+      // 2) Svuota tutti i campi del form (Passo 4)
+      document.getElementById('campoNome').value = '';
+      document.getElementById('campoCognome').value = '';
+      document.getElementById('campoDataNascita').value = '';
+      document.getElementById('campoEmail').value = '';
+      document.getElementById('campoTelefono').value = '';
+      document.getElementById('campoDisciplina').value = '';
+
+      // 3) Toglie l'evidenziazione dalle card di tipo visita (Passo 1)
+      document.querySelectorAll('#passo1 .scheda-tipo-visita').forEach(function(el) {
+        el.classList.remove('selezionata');
+      });
+
+      // 4) Rimette i contenitori di date/orari nello stato "in caricamento",
+      //    pronti per essere ripopolati alla prossima scelta del Passo 1
+      document.getElementById('contenitoreDate').innerHTML =
+        '<div class="stato-caricamento">Carico le date disponibili…</div>';
+      document.getElementById('contenitoreOrari').innerHTML =
+        '<div class="stato-caricamento">Carico gli orari disponibili…</div>';
+
+      // 5) Riporta visibile l'header, l'indicatore di avanzamento, e torna al Passo 1
+      document.getElementById('intestazionePrincipale').style.display = 'block';
+      document.getElementById('indicatorePassi').style.display = 'flex';
+      vaAlPasso(1);
+    }
+  </script>
+
+</body>
+</html>
