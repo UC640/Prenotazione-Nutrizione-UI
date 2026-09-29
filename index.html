@@ -50,6 +50,28 @@
 
     h2.titolo-passo { font-size: 19px; font-weight: 600; margin: 0 0 18px; }
 
+    /* ===== Data selezionata nel Passo 3 ===== */
+    .data-selezionata-orari {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #E8EFFB;
+      border: 1.5px solid var(--colore-guida-scuro);
+      border-radius: var(--raggio);
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    
+    .data-selezionata-orari .icona-data {
+      font-size: 18px;
+    }
+    
+    .data-selezionata-orari .testo-data {
+      font-weight: 600;
+      color: var(--colore-guida-scuro);
+    }
+
     /* ===== Passo 1: due card di tipo visita affiancate ===== */
     .griglia-tipo-visita {
       display: grid;
@@ -241,7 +263,14 @@
     <!-- PASSO 3: ORARIO - diviso in Mattina / Pomeriggio -->
     <section class="passo" id="passo3">
       <div class="passo-label">Passo 3 di 5</div>
+    
+      <div class="data-selezionata-orari">
+        <span class="icona-data">📅</span>
+        <span class="testo-data" id="dataSelezionataOrari"></span>
+      </div>
+    
       <h2 class="titolo-passo">Scegli un orario fra quelli disponibili</h2>
+    
       <div id="contenitoreOrari">
         <div class="stato-caricamento">Carico gli orari disponibili…</div>
       </div>
@@ -410,12 +439,21 @@
       contenitore.appendChild(griglia);
     }
 
-    function selezionaData(dataISO, etichetta) {
+     function selezionaData(dataISO, etichetta) {
       statoPrenotazione.dataISO = dataISO;
       statoPrenotazione.etichettaData = etichetta;
+    
       document.querySelectorAll('#contenitoreDate .scheda-data').forEach(function(el) {
-        el.classList.toggle('selezionata', el.getAttribute('data-data-iso') === dataISO);
+        el.classList.toggle(
+          'selezionata',
+          el.getAttribute('data-data-iso') === dataISO
+        );
       });
+    
+      // Mostra la data selezionata anche nel Passo 3
+      document.getElementById('dataSelezionataOrari').textContent =
+        etichetta;
+    
       caricaOrariDisponibili();
       vaAlPasso(3);
     }
