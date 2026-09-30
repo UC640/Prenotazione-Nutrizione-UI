@@ -352,20 +352,30 @@
     //    con una breve pausa crescente tra un tentativo e l'altro
     // Va usata SOLO per chiamate di sola lettura (GET): ripetere una scrittura
     // (POST di conferma prenotazione) rischierebbe di duplicarla.
-    function fetchConRitentativi(url, timeoutMs, tentativiMax) {
+    function fetchConRitentativi(url, timeoutMs, tentativiMax, alCambioStato) {
       function tentativo(numeroTentativo) {
         const controller = new AbortController();
         const timer = setTimeout(function() { controller.abort(); }, timeoutMs);
 
+        // Dopo 5 secondi ancora in attesa, avvisa l'utente che il sistema
+        // sta ancora lavorando (invece di lasciarlo con un messaggio statico
+        // che sembra bloccato)
+        const timerAvviso = setTimeout(function() {
+          if (alCambioStato) alCambioStato('lento');
+        }, 5000);
+
         return fetch(url, { signal: controller.signal })
           .then(function(risposta) {
             clearTimeout(timer);
+            clearTimeout(timerAvviso);
             if (!risposta.ok) throw new Error('Risposta HTTP ' + risposta.status);
             return risposta.json();
           })
           .catch(function(errore) {
             clearTimeout(timer);
+            clearTimeout(timerAvviso);
             if (numeroTentativo < tentativiMax) {
+              if (alCambioStato) alCambioStato('ritento');
               const attesa = 800 * numeroTentativo; // pausa crescente: 800ms, 1600ms, ...
               return new Promise(function(resolve) { setTimeout(resolve, attesa); })
                 .then(function() { return tentativo(numeroTentativo + 1); });
@@ -432,7 +442,14 @@
       document.getElementById('contenitoreDate').innerHTML =
         '<div class="stato-caricamento">Carico le date disponibili…</div>';
 
-      fetchConRitentativi(URL_API + '?azione=giorniDisponibili', 10000, 3)
+      fetchConRitentativi(URL_API + '?azione=giorniDisponibili', 25000, 2, function(stato) {
+          const el = document.getElementById('contenitoreDate');
+          if (stato === 'lento') {
+            el.innerHTML = '<div class="stato-caricamento">Ci sto ancora lavorando, un attimo…</div>';
+          } else if (stato === 'ritento') {
+            el.innerHTML = '<div class="stato-caricamento">Riprovo…</div>';
+          }
+        })
         .then(function(giorni) {
           if (giorni.errore) throw new Error(giorni.errore);
           mostraDateDisponibili(giorni);
@@ -500,7 +517,14 @@
         '&dataISO=' + encodeURIComponent(statoPrenotazione.dataISO) +
         '&tipoVisita=' + encodeURIComponent(statoPrenotazione.tipoVisita);
 
-      fetchConRitentativi(URL_API + parametri, 10000, 3)
+      fetchConRitentativi(URL_API + parametri, 25000, 2, function(stato) {
+          const el = document.getElementById('contenitoreOrari');
+          if (stato === 'lento') {
+            el.innerHTML = '<div class="stato-caricamento">Ci sto ancora lavorando, un attimo…</div>';
+          } else if (stato === 'ritento') {
+            el.innerHTML = '<div class="stato-caricamento">Riprovo…</div>';
+          }
+        })
         .then(function(orari) {
           if (orari.errore) throw new Error(orari.errore);
           mostraOrariDisponibili(orari);
