@@ -613,7 +613,15 @@
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(datiDaInviare)
       })
-        .then(function(risposta) { return risposta.json(); })
+        .then(function(risposta) {
+          if (!risposta.ok) {
+            throw new Error('Errore HTTP ' + risposta.status);
+          }
+          return risposta.text();
+        })
+        .then(function(testo) {
+          return JSON.parse(testo);
+        })
         .then(gestisciRispostaConferma)
         .catch(function(errore) {
           bottone.disabled = false;
