@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-  <base target="_top">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Prenota la tua visita presso lo Studio Nutrizionale G. Bagnano">
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <div class="contenitore">
@@ -23,19 +24,18 @@
       <span data-passo="5"></span>
     </div>
 
-    <div class="messaggio-errore" id="messaggioErrore"></div>
+    <div class="messaggio-errore" id="messaggioErrore" role="alert" aria-live="polite"></div>
 
-    <!-- PASSO 1: TIPO VISITA - 2 card affiancate -->
     <section class="passo attivo" id="passo1">
       <div class="passo-label">Passo 1 di 5</div>
       <h2 class="titolo-passo">Che tipo di visita vuoi prenotare?</h2>
       <div class="griglia-tipo-visita">
-        <button class="scheda-tipo-visita" data-tipo="Prima visita" onclick="selezionaTipoVisita('Prima visita')">
+        <button type="button" class="scheda-tipo-visita" data-tipo="Prima visita" onclick="selezionaTipoVisita('Prima visita')">
           <span class="icona-tipo-visita">📋</span>
           <span class="titolo-opzione">Prima visita</span>
           <span class="sottotitolo-opzione">Durata: 60 minuti</span>
         </button>
-        <button class="scheda-tipo-visita" data-tipo="Visita di controllo" onclick="selezionaTipoVisita('Visita di controllo')">
+        <button type="button" class="scheda-tipo-visita" data-tipo="Visita di controllo" onclick="selezionaTipoVisita('Visita di controllo')">
           <span class="icona-tipo-visita">🔄</span>
           <span class="titolo-opzione">Visita di controllo</span>
           <span class="sottotitolo-opzione">Durata: 30 minuti</span>
@@ -43,7 +43,6 @@
       </div>
     </section>
 
-    <!-- PASSO 2: DATA - griglia 3 per riga -->
     <section class="passo" id="passo2">
       <div class="passo-label">Passo 2 di 5</div>
       <h2 class="titolo-passo">Scegli una data</h2>
@@ -51,90 +50,83 @@
         <div class="stato-caricamento">Carico le date disponibili…</div>
       </div>
       <div class="azioni">
-        <button class="secondario" onclick="vaAlPasso(1)">Indietro</button>
+        <button type="button" class="secondario" onclick="vaAlPasso(1)">Indietro</button>
       </div>
     </section>
 
-    <!-- PASSO 3: ORARIO - diviso in Mattina / Pomeriggio -->
     <section class="passo" id="passo3">
       <div class="passo-label">Passo 3 di 5</div>
-    
+
       <div class="data-selezionata-orari">
         <span class="icona-data">📅</span>
         <span class="testo-data" id="dataSelezionataOrari"></span>
       </div>
-    
+
       <h2 class="titolo-passo">Scegli un orario fra quelli disponibili</h2>
-    
+
       <div id="contenitoreOrari">
         <div class="stato-caricamento">Carico gli orari disponibili…</div>
       </div>
       <div class="azioni">
-        <button class="secondario" onclick="vaAlPasso(2)">Indietro</button>
+        <button type="button" class="secondario" onclick="vaAlPasso(2)">Indietro</button>
       </div>
     </section>
 
-    <!-- PASSO 4: DATI ANAGRAFICI - racchiusi in una scheda con sfondo -->
     <section class="passo" id="passo4">
       <div class="passo-label">Passo 4 di 5</div>
       <h2 class="titolo-passo">Inserisci i tuoi dati</h2>
       <div class="scheda-dati-utente">
         <div class="campo">
           <label for="campoNome">Nome</label>
-          <input type="text" id="campoNome">
+          <input type="text" id="campoNome" autocomplete="given-name">
         </div>
         <div class="campo">
           <label for="campoCognome">Cognome</label>
-          <input type="text" id="campoCognome">
+          <input type="text" id="campoCognome" autocomplete="family-name">
         </div>
         <div class="campo">
           <label for="campoDataNascita">Data di nascita</label>
-          <input type="date" id="campoDataNascita">
+          <input type="date" id="campoDataNascita" autocomplete="bday">
         </div>
         <div class="campo">
           <label for="campoEmail">Email</label>
-          <input type="email" id="campoEmail">
+          <input type="email" id="campoEmail" autocomplete="email">
         </div>
         <div class="campo">
           <label for="campoTelefono">Telefono</label>
-          <input type="tel" id="campoTelefono">
+          <input type="tel" id="campoTelefono" autocomplete="tel">
         </div>
         <div class="campo">
           <label for="campoDisciplina">Disciplina sportiva praticata</label>
-          <input type="text" id="campoDisciplina">
+          <input type="text" id="campoDisciplina" autocomplete="off">
         </div>
       </div>
       <div class="azioni">
-        <button class="secondario" onclick="vaAlPasso(3)">Indietro</button>
-        <button class="principale" onclick="validaDatiEProsegui()">Continua</button>
+        <button type="button" class="secondario" onclick="vaAlPasso(3)">Indietro</button>
+        <button type="button" class="principale" onclick="validaDatiEProsegui()">Continua</button>
       </div>
     </section>
 
-    <!-- PASSO 5: RIEPILOGO E CONFERMA -->
     <section class="passo" id="passo5">
       <div class="passo-label">Passo 5 di 5</div>
       <h2 class="titolo-passo">Controlla e conferma</h2>
       <div class="riepilogo" id="riepilogoFinale"></div>
       <div class="azioni">
-        <button class="secondario" onclick="vaAlPasso(4)">Indietro</button>
-        <button class="principale" id="bottoneConferma" onclick="inviaPrenotazione()">Conferma prenotazione</button>
+        <button type="button" class="secondario" onclick="vaAlPasso(4)">Indietro</button>
+        <button type="button" class="principale" id="bottoneConferma" onclick="inviaPrenotazione()">Conferma prenotazione</button>
       </div>
     </section>
 
-    <!-- SCHERMATA FINALE DI SUCCESSO -->
     <section class="passo" id="passoSuccesso">
       <div class="schermata-successo">
         <div class="segno">✓</div>
         <h2>Prenotazione confermata!</h2>
         <p id="testoSuccesso"></p>
-        <button class="principale" onclick="ricominciaPrenotazione()">Prenota un'altra visita</button>
+        <button type="button" class="principale" onclick="ricominciaPrenotazione()">Prenota un'altra visita</button>
       </div>
     </section>
   </div>
 
-  <script src="script.js"></script>
-</body>
-
-
+  <script src="./script.js" defer></script>
 </body>
 </html>
